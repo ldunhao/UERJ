@@ -240,14 +240,14 @@ void handleKeypress(unsigned char key, int x, int y) {
 		case 'v':
 			wheelMotionFront -= 5;
 			if (wheelMotionFront < -360) {
-				wheelMotionFront -= 360;
+				wheelMotionFront += 360;
 			};
 			glutPostRedisplay();
 			break;
 		case 'b':
 			wheelMotionBack += 5;
 			if (wheelMotionBack > 360) {
-				wheelMotionBack += 360;
+				wheelMotionBack -= 360;
 			};
 			glutPostRedisplay();
 			break;
