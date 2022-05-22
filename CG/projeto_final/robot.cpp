@@ -9,11 +9,17 @@
 
 using namespace std;
 
-char* filenameTexMetal1 = (char*) "./metalTexture1.bmp";
+char* filenameTexMetal1 = (char*)"./metalTexture1.bmp";
+char* filenameTexWheel = (char*)"./roda.bmp";
+char* filenameTexHubCap = (char*)"./hubcap_1_.bmp";
+char* filenameTexGlass = (char*) "./glass.bmp";
 
-GLuint _textureIdMetal1;
+GLuint _textureIdMetal;
 GLuint _textureIdSphere; 
 GLuint _textureIdCylinder; 
+GLuint _textureIdWheel;
+GLuint _textureIdHubCap;
+GLuint _textureIdGlass;
 
 GLUquadric *quadSphere;
 GLUquadric *quadCylinder;
@@ -23,6 +29,9 @@ GLUquadric *quadWheel;
 bool textureOn = true;
 
 float diameterWheel = 0.3;
+float wheelMotion = 0;
+float sanfonaMotionLeft = 0;
+float sanfonaMotionRight = 0;
 
 float diameterCylinder = 0.3;
 float diameterSphere = 0.4;
@@ -32,6 +41,14 @@ float sizeHand = 2.0;
 float sizeClampPart = 1.0;
 float diameterBase = 1.0;
 float heightBase = 0.5;
+
+float headLength = 2.f;
+float headDiameter = 3.f;
+float ConeHeight = 0.6f;
+float wheelLink = ConeHeight * 1.5f;
+float eyeSize = 0.6f;
+float eyewidth = 0.3f;
+float offSet = 0.025f;
 
 float bodyDiameter = 2.0f;
 float bodyLength = 5.0f;
@@ -106,9 +123,10 @@ GLuint loadTexture(char *filename) {
 void initRendering(void) {
 	quadSphere = gluNewQuadric();
 	quadCylinder = gluNewQuadric();
-	_textureIdMetal1 = loadTexture(filenameTexMetal1);
-	_textureIdCylinder = _textureIdMetal1;
-	_textureIdSphere = _textureIdMetal1;
+	_textureIdMetal = loadTexture(filenameTexMetal1);
+	_textureIdWheel = loadTexture(filenameTexWheel);
+	_textureIdHubCap = loadTexture(filenameTexHubCap);
+	_textureIdGlass = loadTexture(filenameTexGlass);
 }
 
 void handleMouse(int button, int state, int x, int y) {
@@ -204,6 +222,27 @@ void handleKeypress(unsigned char key, int x, int y) {
 			if (angleClampY > 0) angleClampY -= 3;
 			glutPostRedisplay();
 			break;
+		case 'c':
+			sanfonaMotionLeft -= 5;
+			if (sanfonaMotionLeft < -360) {
+				sanfonaMotionLeft += 360;
+			};
+			glutPostRedisplay();
+			break;
+		case 'x':
+			sanfonaMotionRight += 5;
+			if (sanfonaMotionLeft > 360) {
+				sanfonaMotionLeft -= 360;
+			};
+			glutPostRedisplay();
+			break;
+		case 'v':
+			wheelMotion -= 5;
+			if (wheelMotion < -360) {
+				wheelMotion += 360;
+			};
+			glutPostRedisplay();
+			break;
 	}
 }
 
@@ -214,9 +253,9 @@ void handleResize(int w, int h) {
 	gluPerspective(60.0, (float)w / (float)h, 10.0, 50.0);
 }
 
-void drawCylinder(float diameter, float lenght) {
+void drawCylinder(float diameter, float lenght, GLuint textureName) {
 	if (textureOn) {
-		glBindTexture(GL_TEXTURE_2D, _textureIdCylinder);
+		glBindTexture(GL_TEXTURE_2D, textureName);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		gluQuadricTexture(quadCylinder, 1);
@@ -226,9 +265,9 @@ void drawCylinder(float diameter, float lenght) {
 	gluCylinder(quadCylinder, diameter, diameter, lenght, 40.0, lenght*30.0);
 }
 
-void drawCone(float diameter, float lenght) {
+void drawCone(float diameter, float lenght, GLuint textureName) {
 	if (textureOn) {
-		glBindTexture(GL_TEXTURE_2D, _textureIdCylinder);
+		glBindTexture(GL_TEXTURE_2D, textureName);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		gluQuadricTexture(quadCylinder, 1);
@@ -237,9 +276,9 @@ void drawCone(float diameter, float lenght) {
 	gluCylinder(quadCylinder, diameter, 0, lenght, 40.0, lenght*30.0);
 }
 
-void drawDisk(float diameterInner, float diameterOuter) {
+void drawDisk(float diameterInner, float diameterOuter, GLuint textureName) {
 	if (textureOn) {
-		glBindTexture(GL_TEXTURE_2D, _textureIdCylinder);
+		glBindTexture(GL_TEXTURE_2D, textureName);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		gluQuadricTexture(quadCylinder, 1);
@@ -249,9 +288,9 @@ void drawDisk(float diameterInner, float diameterOuter) {
 	gluDisk(quadCylinder, diameterInner, diameterOuter, 40.0, 30.0);
 }
 
-void drawSphere(float diameter) {
+void drawSphere(float diameter, GLuint textureName) {
 	if (textureOn) {
-		glBindTexture(GL_TEXTURE_2D, _textureIdSphere);
+		glBindTexture(GL_TEXTURE_2D, textureName);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		gluQuadricTexture(quadSphere, 1);
@@ -260,9 +299,9 @@ void drawSphere(float diameter) {
 	gluSphere(quadSphere, diameter, 40.0, 40.0);
 }
 
-void drawCube(float size) {
+void drawCube(float size, GLuint textureName) {
 	if (textureOn) {
-		glBindTexture(GL_TEXTURE_2D, _textureIdCylinder);
+		glBindTexture(GL_TEXTURE_2D, textureName);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		gluQuadricTexture(quadCylinder, 1);
@@ -273,57 +312,98 @@ void drawCube(float size) {
 	glutSolidCube(size);
 }
 
-void drawWheel(int wheelSide) {
-	float wheelLength = 0.2f;
-	float wheelDiameter = diameterBase / 2;
+void drawSanfona(float Diameter, float Length, float ConeHeight) {
+	float sanfonaDiameter = Diameter / 3;
+	float sanfonaHeight = ConeHeight / 2;
 
-	glColor3f(1, 0, 0);
+	glPushMatrix();
+	//Primeira parte da sanfona
+	drawCone(sanfonaDiameter, sanfonaHeight, _textureIdMetal);
 
-	glTranslatef(0.0f, (diameterBase/2 + 0.1f * wheelSide) * wheelSide, -diameterBase/2);
-	glRotatef(90, 1.0f, 0.0f, 0.0f);
+	glRotatef(180, 0.0f, 0.0f, 0.0f);
 
-	gluDisk(quadCylinder, 0, wheelDiameter, 40.0, 30.0);
+	drawCone(sanfonaDiameter, sanfonaHeight, _textureIdMetal);
 
-	drawCylinder(wheelDiameter, wheelLength);
+	glTranslatef(0.0f, 0.0f, -ConeHeight);
 
-	glTranslatef(0.0f, 0.0f, wheelLength);
+	//Segunda parte da sanfona
+	drawCone(sanfonaDiameter, sanfonaHeight, _textureIdMetal);
 
-	gluDisk(quadCylinder, 0, wheelDiameter, 40.0, 30.0);
+	glRotatef(180, 0.0f, 0.0f, 0.0f);
 
-	/*glTranslatef(-(diameterBase / 2), 0.0f, 0.0f);
-	glRotatef(90, 0.0f, 1.0f, 0.0f);
-	drawCylinder(diameterBase / 2, 3);
-	*/
+	drawCone(sanfonaDiameter, sanfonaHeight, _textureIdMetal);
 
+	glTranslatef(0.0f, 0.0f, -ConeHeight * 2);
+
+	//Terceira parte da sanfona
+	drawCone(sanfonaDiameter, sanfonaHeight, _textureIdMetal);
+
+	glRotatef(180, 0.0f, 0.0f, 0.0f);
+
+	drawCone(sanfonaDiameter, ConeHeight / 2, _textureIdMetal);
+
+	glTranslatef(0.0f, 0.0f, -ConeHeight * 2);
+
+	glPopMatrix();
+
+	glTranslatef(0.f, 0.f, -ConeHeight*2);
+	drawCylinder(sanfonaDiameter / 2, sanfonaHeight*8, _textureIdMetal);
+}
+
+void drawWheelLink() {
+	drawDisk(0, headDiameter / 4, _textureIdMetal);
+
+	drawCylinder(headDiameter / 4, wheelLink, _textureIdMetal);
+
+	glTranslatef(0.0f, 0.0f, wheelLink);
+
+	drawDisk(0, headDiameter / 4, _textureIdMetal);
+}
+
+void drawWheel() {
+	glTranslatef(0.0f, 0.0f, -ConeHeight);
+
+	glRotatef(wheelMotion, 0.0f, 0.0f, 1.0f);
+
+	glBindTexture(GL_TEXTURE_2D, _textureIdHubCap);
+	drawDisk(0, headDiameter / 2, _textureIdHubCap);
+
+	glBindTexture(GL_TEXTURE_2D, _textureIdWheel);
+	drawCylinder(headDiameter / 2, ConeHeight*2, _textureIdWheel);
+
+	glTranslatef(0.0f, 0.0f, ConeHeight*2);
+
+	glBindTexture(GL_TEXTURE_2D, _textureIdHubCap);
+	drawDisk(0, headDiameter / 2, _textureIdHubCap);
 }
 
 void drawClaw() {
 	// draws the base
-	drawCylinder(diameterBase, heightBase);
+	drawCylinder(diameterBase, heightBase, _textureIdMetal);
 	glTranslatef(0.0f, 0.0f, heightBase);
-	drawDisk(diameterCylinder, diameterBase);
+	drawDisk(diameterCylinder, diameterBase, _textureIdMetal);
 
 	// move to arm referential
 	glRotatef(angleArm, 0.0f, 0.0f, 1.0f);
 
 	//draws the arm
-	drawCylinder(diameterCylinder, sizeArm);
+	drawCylinder(diameterCylinder, sizeArm, _textureIdMetal);
 
 	// move to forearm referential
 	glTranslatef(0.0f, 0.0f, sizeArm + diameterSphere / 5);
 	glRotatef(angleForearm, 0.0f, 1.0f, 0.0f);
 
 	//draws the forearm
-	drawSphere(diameterSphere);
+	drawSphere(diameterSphere, _textureIdMetal);
 	glTranslatef(0.0f, 0.0f, diameterSphere / 5);
-	drawCylinder(diameterCylinder, sizeForearm);
+	drawCylinder(diameterCylinder, sizeForearm, _textureIdMetal);
 
 	//move to clamp referential
 	glTranslatef(0.0f, 0.0f, sizeForearm + diameterSphere / 5);
 	glRotatef(angleClampZ, 0.0f, 0.0f, 1.0f);
 
 	//draws the clamp sphere
-	drawSphere(diameterSphere);
+	drawSphere(diameterSphere, _textureIdMetal);
 	glTranslatef(0.0f, 0.0f, diameterSphere / 2);
 
 	glPushMatrix();
@@ -331,20 +411,20 @@ void drawClaw() {
 	//draws top part of clamp
 	glRotatef(angleClampY + 60, 0.0f, 1.0f, 0.0f);
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart);
+	drawCylinder(diameterCylinder / 3, sizeClampPart, _textureIdMetal);
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15);
-	drawSphere(diameterSphere / 3);
+	drawSphere(diameterSphere / 3, _textureIdMetal);
 
 	glTranslatef(0.0f, 0.0f, diameterSphere / 15);
 	glRotatef(-60, 0.0f, 1.0f, 0.0f);
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart);
+	drawCylinder(diameterCylinder / 3, sizeClampPart, _textureIdMetal);
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15);
-	drawSphere(diameterSphere / 3);
+	drawSphere(diameterSphere / 3, _textureIdMetal);
 
 	glTranslatef(0.0f, 0.0f, diameterSphere / 15);
 	glRotatef(-60, 0.0f, 1.0f, 0.0f);
-	drawCone(diameterCylinder / 3, sizeClampPart);
+	drawCone(diameterCylinder / 3, sizeClampPart, _textureIdMetal);
 
 	glPopMatrix();
 	glPushMatrix();
@@ -352,20 +432,20 @@ void drawClaw() {
 	//draws bottom part of clamp
 	glRotatef(-angleClampY - 60, 0.0f, 1.0f, 0.0f);
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart);
+	drawCylinder(diameterCylinder / 3, sizeClampPart, _textureIdMetal);
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15);
-	drawSphere(diameterSphere / 3);
+	drawSphere(diameterSphere / 3, _textureIdMetal);
 
 	glTranslatef(0.0f, 0.0f, diameterSphere / 15);
 	glRotatef(60, 0.0f, 1.0f, 0.0f);
 
-	drawCylinder(diameterCylinder / 3, sizeClampPart);
+	drawCylinder(diameterCylinder / 3, sizeClampPart, _textureIdMetal);
 	glTranslatef(0.0f, 0.0f, sizeClampPart + diameterSphere / 15);
-	drawSphere(diameterSphere / 3);
+	drawSphere(diameterSphere / 3, _textureIdMetal);
 
 	glTranslatef(0.0f, 0.0f, diameterSphere / 15);
 	glRotatef(60, 0.0f, 1.0f, 0.0f);
-	drawCone(diameterCylinder / 3, sizeClampPart);
+	drawCone(diameterCylinder / 3, sizeClampPart, _textureIdMetal);
 
 	glPopMatrix();
 }
@@ -373,65 +453,55 @@ void drawClaw() {
 void drawBody(float bodyDiameter, float bodyLenght) {
 
 	glColor3f(1, 1, 1);
-	drawCylinder(bodyDiameter, bodyLenght);
+	drawCylinder(bodyDiameter, bodyLenght, _textureIdMetal);
 
 	glTranslatef(0.0f, 0.0f , -bodyDiameter/10);
 
-	drawSphere(bodyDiameter);
+	drawSphere(bodyDiameter, _textureIdMetal);
 	
 	glTranslatef(0.0f, 0.0f, bodyLenght + (bodyDiameter / 10));
 	glRotatef(180, 0.0f, 0.0f, 0.0f);
-	drawCone(bodyDiameter, 1);
+	drawCone(bodyDiameter, 1, _textureIdMetal);
 }
 
 void drawHead() {
-	float headLength = 2.f;
-	float headDiameter = 3.f;
-	float ConeHight = 0.6f;
-	float eyeSize = 0.6f;
-	float eyewidth = 0.3f;
-	float offSet = 0.025f;
-
-	drawCone(headDiameter, ConeHight);
+	drawCone(headDiameter, ConeHeight, _textureIdMetal);
 
 	glRotatef(180, 0.0f, 0.0f, 0.0f);
 
-	drawCylinder(headDiameter, headLength);
+	drawCylinder(headDiameter, headLength, _textureIdMetal);
 
 	glTranslatef(0.0f, 0.0f, headLength);
 
-	drawCone(headDiameter, ConeHight);
+	drawCone(headDiameter, ConeHeight, _textureIdMetal);
 
 	glPopMatrix();
 
 	glRotatef(-90, .0f, .0f, 1.0f);
 
-
+	glColor3f(1, 0, 0);
 	glPushMatrix();
+		
 		glTranslatef(0.f, headDiameter - 0.25f, (headLength + bodyLength) / 2 + eyeSize / 2);
 
-		glColor3f(1, 0.5, 0);
-		drawCylinder(eyewidth, eyeSize);
+		drawCylinder(eyewidth, eyeSize, _textureIdGlass);
 
 		glTranslatef(eyewidth, -offSet, 0.f);
-		glColor3f(0, 1, 0);
-		drawCylinder(eyewidth, eyeSize);
+		drawCylinder(eyewidth, eyeSize, _textureIdGlass);
 
 		glTranslatef(eyewidth, -offSet, 0.f);
-		glColor3f(1.0, 0, 1.0);
-		drawCylinder(eyewidth, eyeSize);
+		drawCylinder(eyewidth, eyeSize, _textureIdGlass);
 	glPopMatrix();
 
 	glPushMatrix();
 		glTranslatef(0.f, headDiameter - 0.25f, (headLength + bodyLength) / 2 + eyeSize / 2);
 
 		glTranslatef(-eyewidth, -offSet, 0.f);
-		glColor3f(0, 0, 1);
-		drawCylinder(eyewidth, eyeSize);
+		drawCylinder(eyewidth, eyeSize, _textureIdGlass);
 
 		glTranslatef(-eyewidth, -offSet, 0.f);
-		glColor3f(1, 0, 0);
-		drawCylinder(eyewidth, eyeSize);
+		drawCylinder(eyewidth, eyeSize, _textureIdGlass);
+		glColor3f(1, 1, 1);
 	glPopMatrix();
 }
 
@@ -458,7 +528,6 @@ void drawScene(void) {
 	// drawing color
 	glColor3f(1.0f, 1.0f, 1.0f);
 
-	
 	glPushMatrix();
 		drawBody(bodyDiameter, bodyLength);
 	glPopMatrix();
@@ -479,6 +548,24 @@ void drawScene(void) {
 		glRotatef(-90, 0.0f, 1.0f, 0.0f);
 		drawClaw();
 	glPopMatrix();
+
+	glPushMatrix();
+		glRotatef(sanfonaMotionLeft, 0.0f, 0.0f, 1.0f);
+		glRotatef(sanfonaMotionRight, 0.0f, 0.0f, 1.0f);
+		glTranslatef(0.0f, 0.0f, -bodyLength/2 - bodyDiameter / 10 - ConeHeight/2);
+		drawSanfona(2.0f,0.5f,0.6f);
+	glPopMatrix();
+
+	glPushMatrix();
+		glRotatef(sanfonaMotionLeft, 0.0f, 0.0f, 1.0f);
+		glRotatef(sanfonaMotionRight, 0.0f, 0.0f, 1.0f);
+		glTranslatef(-wheelLink/2, 0.0f, -bodyLength + 0.05f);
+		glRotatef(90, 1.0f, 0.0f, 0.0f);
+		glRotatef(90, 0.0f, 1.0f, 0.0f);
+		drawWheelLink();
+		glTranslatef(0.0f, -wheelLink ,-wheelLink/2);
+		drawWheel();
+	glPopMatrix();
 	
 	glutSwapBuffers();
 }
@@ -487,7 +574,7 @@ int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutInitWindowSize(1200, 1200);
-	glutCreateWindow("Garra");
+	glutCreateWindow("Trabalho Final CG - Lucas e Eduardo");
 
 	initLighting();
 	initRendering();
