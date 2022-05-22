@@ -29,7 +29,8 @@ GLUquadric *quadWheel;
 bool textureOn = true;
 
 float diameterWheel = 0.3;
-float wheelMotion = 0;
+float wheelMotionFront = 0;
+float wheelMotionBack = 0;
 float sanfonaMotionLeft = 0;
 float sanfonaMotionRight = 0;
 
@@ -237,9 +238,16 @@ void handleKeypress(unsigned char key, int x, int y) {
 			glutPostRedisplay();
 			break;
 		case 'v':
-			wheelMotion -= 5;
-			if (wheelMotion < -360) {
-				wheelMotion += 360;
+			wheelMotionFront -= 5;
+			if (wheelMotionFront < -360) {
+				wheelMotionFront -= 360;
+			};
+			glutPostRedisplay();
+			break;
+		case 'b':
+			wheelMotionBack += 5;
+			if (wheelMotionBack > 360) {
+				wheelMotionBack += 360;
 			};
 			glutPostRedisplay();
 			break;
@@ -363,7 +371,8 @@ void drawWheelLink() {
 void drawWheel() {
 	glTranslatef(0.0f, 0.0f, -ConeHeight);
 
-	glRotatef(wheelMotion, 0.0f, 0.0f, 1.0f);
+	glRotatef(wheelMotionFront, 0.0f, 0.0f, 1.0f);
+	glRotatef(wheelMotionBack, 0.0f, 0.0f, 1.0f);
 
 	glBindTexture(GL_TEXTURE_2D, _textureIdHubCap);
 	drawDisk(0, headDiameter / 2, _textureIdHubCap);
